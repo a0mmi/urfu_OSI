@@ -1,0 +1,1 @@
+awk -F: '$2+0>=10 {print $1}' ./5/students.txt
