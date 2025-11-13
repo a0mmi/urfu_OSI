@@ -24,3 +24,34 @@ jnz     short
 
 5. Добавил проверку ошибки деления на нуль. Нашёл свободное место между 0x00****B68 и 0x00****B8 (code-cave)
 !!code-cave: 0x00****B68 (в дампе db 50h dup(0CCh) — ~80 байт свободных 0xCC)!!
+.text:00DE5B68 ; ---------------------------------------------------------------------------
+.text:00DE5B68 ; START OF FUNCTION CHUNK FOR _main_0
+.text:00DE5B68
+.text:00DE5B68 loc_DE5B68:                             ; CODE XREF: _main_0:loc_DE5AF2↑j
+.text:00DE5B68                 cmp     ebx, 0          ; Trap to Debugger
+.text:00DE5B6B                 jz      short loc_DE5B75 ; Trap to Debugger
+.text:00DE5B6D                 cdq                     ; Trap to Debugger
+.text:00DE5B6E                 idiv    ebx             ; Trap to Debugger
+.text:00DE5B70                 jmp     loc_DE5AF6      ; Trap to Debugger
+.text:00DE5B75 ; ---------------------------------------------------------------------------
+.text:00DE5B75
+.text:00DE5B75 loc_DE5B75:                             ; CODE XREF: _main_0+14B↑j           // Переход на ошибку "Illegal operation"
+.text:00DE5B75                 jmp     loc_DE5ABB
+.text:00DE5B7A ; ---------------------------------------------------------------------------
+Добавил такой код выше на адрес 0x00DE5B68. Была проблема в том, что проверка минимум 4 байт, а максимум, что можно было вставить перед делением -- это 2 байта, поэтому требовалось найти свободное место. (Code-cave)
+Я направляю так:
+.text:00DE5AE8
+.text:00DE5AE8 loc_DE5AE8:                             ; CODE XREF: _main_0+C2↑j
+.text:00DE5AE8                 cmp     ecx, 2Ah ; '*'
+.text:00DE5AEB                 jnz     short loc_DE5AF2
+.text:00DE5AED                 imul    eax, ebx
+.text:00DE5AF0                 jmp     short loc_DE5AF6
+.text:00DE5AF2 ; ---------------------------------------------------------------------------
+.text:00DE5AF2
+.text:00DE5AF2 loc_DE5AF2:                             ; CODE XREF: _main_0+CB↑j
+.text:00DE5AF2                 jmp     short loc_DE5B68                                     // Тут я перехожу на code-cave -- 2 байта
+.text:00DE5AF2 ; ---------------------------------------------------------------------------
+.text:00DE5AF4                 db    0                                                      // idvi, ebx -- 2 байта обнулил11
+.text:00DE5AF5                 db    0
+.text:00DE5AF6 ; ---------------------------------------------------------------------------
+А дальше перехожу на продолжение функций.
