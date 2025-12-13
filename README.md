@@ -1,3 +1,3 @@
-# urfu_OSI
+@@ -1,3 +0,0 @@
 
-3. Where команда через bat файл
+# urfu_OSI

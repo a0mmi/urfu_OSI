@@ -37,7 +37,7 @@ namespace philosophers_os
                 Console.WriteLine(this.id + " thinking");
             }
 
-            Thread.Sleep(this.random.Next(0, 100));
+            Thread.Sleep(1);
 
             if (this.debug_flag)
             {
@@ -55,7 +55,7 @@ namespace philosophers_os
                 Console.WriteLine(this.id + " eating");
             }
 
-            Thread.Sleep(this.random.Next(0, 100));
+            Thread.Sleep(1);
 
             eat_count++;
         }
