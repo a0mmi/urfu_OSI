@@ -1,168 +1,168 @@
-﻿using System;
-using System.Threading;
+﻿    using System;
+    using System.Threading;
 
-namespace philosophers_os
-{
-    class Fork
+    namespace philosophers_os
     {
-        private Mutex m = new Mutex();
-
-        public void take()
+        class Fork
         {
-            m.WaitOne();
-        }
+            private Mutex m = new Mutex();
 
-        public void put()
-        {
-            m.ReleaseMutex();
-        }
-    };
-
-    class Philosopher
-    {
-        int id;
-        Fork fork_left;
-        Fork fork_right;
-        uint eat_count;
-        double wait_time;
-        DateTime wait_start;
-        bool stop_flag;
-        bool debug_flag;
-        Random random;
-
-        void think()
-        {
-            if (this.debug_flag)
+            public void take()
             {
-                Console.WriteLine(this.id + " thinking");
+                m.WaitOne();
             }
 
-            Thread.Sleep(1);
-
-            if (this.debug_flag)
+            public void put()
             {
-                Console.WriteLine(this.id + " hungry");
+                m.ReleaseMutex();
             }
+        };
 
-            this.wait_start = DateTime.Now;
-        }
-
-        void eat()
+        class Philosopher
         {
-            this.wait_time += DateTime.Now.Subtract(this.wait_start).TotalMilliseconds;
-            if (this.debug_flag)
+            int id;
+            Fork fork_left;
+            Fork fork_right;
+            uint eat_count;
+            double wait_time;
+            DateTime wait_start;
+            bool stop_flag;
+            bool debug_flag;
+            Random random;
+
+            void think()
             {
-                Console.WriteLine(this.id + " eating");
-            }
-
-            Thread.Sleep(1);
-
-            eat_count++;
-        }
-
-        public Philosopher(int number, Fork left, Fork right, bool dbg)
-        {
-            this.id = number;
-            this.fork_left = left;
-            this.fork_right = right;
-            this.eat_count = 0;
-            this.wait_time = 0;
-            this.debug_flag = dbg;
-            this.stop_flag = false;
-            this.random = new Random();
-        }
-
-        public void run()
-        {
-            while (!stop_flag)
-            {
-                think();
-
-                this.fork_left.take();
                 if (this.debug_flag)
                 {
-                    Console.WriteLine(this.id + " took left fork");
+                    Console.WriteLine(this.id + " thinking");
                 }
 
-                this.fork_right.take();
+                Thread.Sleep(1);
+
                 if (this.debug_flag)
                 {
-                    Console.WriteLine(this.id + " took right fork");
+                    Console.WriteLine(this.id + " hungry");
                 }
 
-                eat();
+                this.wait_start = DateTime.Now;
+            }
 
-                this.fork_right.put();
+            void eat()
+            {
+                this.wait_time += DateTime.Now.Subtract(this.wait_start).TotalMilliseconds;
                 if (this.debug_flag)
                 {
-                    Console.WriteLine(this.id + " put right fork");
+                    Console.WriteLine(this.id + " eating");
                 }
 
-                this.fork_left.put();
-                if (this.debug_flag)
+                Thread.Sleep(1);
+
+                eat_count++;
+            }
+
+            public Philosopher(int number, Fork left, Fork right, bool dbg)
+            {
+                this.id = number;
+                this.fork_left = left;
+                this.fork_right = right;
+                this.eat_count = 0;
+                this.wait_time = 0;
+                this.debug_flag = dbg;
+                this.stop_flag = false;
+                this.random = new Random();
+            }
+
+            public void run()
+            {
+                while (!stop_flag)
                 {
-                    Console.WriteLine(this.id + " put left fork");
+                    think();
+
+                    this.fork_left.take();
+                    if (this.debug_flag)
+                    {
+                        Console.WriteLine(this.id + " took left fork");
+                    }
+
+                    this.fork_right.take();
+                    if (this.debug_flag)
+                    {
+                        Console.WriteLine(this.id + " took right fork");
+                    }
+
+                    eat();
+
+                    this.fork_right.put();
+                    if (this.debug_flag)
+                    {
+                        Console.WriteLine(this.id + " put right fork");
+                    }
+
+                    this.fork_left.put();
+                    if (this.debug_flag)
+                    {
+                        Console.WriteLine(this.id + " put left fork");
+                    }
                 }
             }
-        }
 
-        public void stop()
+            public void stop()
+            {
+                stop_flag = true;
+            }
+
+            public void printStats()
+            {
+                Console.WriteLine(this.id + " " + this.eat_count + " " + Convert.ToInt32(this.wait_time));
+            }
+        };
+
+        class Program
         {
-            stop_flag = true;
-        }
-
-        public void printStats()
-        {
-            Console.WriteLine(this.id + " " + this.eat_count + " " + Convert.ToInt32(this.wait_time));
-        }
-    };
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            int N = 5;
-            bool dbg = false;
-            int duration = 60000;
-
-            Fork[] forks = new Fork[N];
-            for (int i = 0; i < N; i++)
+            static void Main(string[] args)
             {
-                forks[i] = new Fork();
-            }
+                int N = 5;
+                bool dbg = false;
+                int duration = 60000;
 
-            Philosopher[] phils = new Philosopher[N];
-            for (int i = 0; i < N; i++)
-            {
-                phils[i] = new Philosopher(i + 1, forks[(i + 1) % N], forks[i], dbg);
-            }
+                Fork[] forks = new Fork[N];
+                for (int i = 0; i < N; i++)
+                {
+                    forks[i] = new Fork();
+                }
 
-            Thread[] runners = new Thread[N];
-            for (int i = 0; i < N; i++)
-            {
-                runners[i] = new Thread(phils[i].run);
-            }
-            for (int i = 0; i < N; i++)
-            {
-                runners[i].Start();
-            }
+                Philosopher[] phils = new Philosopher[N];
+                for (int i = 0; i < N; i++)
+                {
+                    phils[i] = new Philosopher(i + 1, forks[(i + 1) % N], forks[i], dbg);
+                }
 
-            Thread.Sleep(duration);
+                Thread[] runners = new Thread[N];
+                for (int i = 0; i < N; i++)
+                {
+                    runners[i] = new Thread(phils[i].run);
+                }
+                for (int i = 0; i < N; i++)
+                {
+                    runners[i].Start();
+                }
 
-            for (int i = 0; i < N; i++)
-            {
-                phils[i].stop();
-            }
+                Thread.Sleep(duration);
 
-            for (int i = 0; i < N; i++)
-            {
-                runners[i].Join();
-            }
+                for (int i = 0; i < N; i++)
+                {
+                    phils[i].stop();
+                }
 
-            for (int i = 0; i < N; i++)
-            {
-                phils[i].printStats();
+                for (int i = 0; i < N; i++)
+                {
+                    runners[i].Join();
+                }
+
+                for (int i = 0; i < N; i++)
+                {
+                    phils[i].printStats();
+                }
             }
         }
     }
-}
